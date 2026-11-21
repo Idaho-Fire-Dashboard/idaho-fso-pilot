@@ -91,7 +91,19 @@ window.FSO_API = async function (nativeFetch, url, init, token) {
     if (/fail|error|could not|couldn|not saved|conflict|unavailable|took longer|unreadable/i.test(text)) return 'error';
     return 'saved';
   }
+  // Phones only: shorter placeholders in the two header search boxes (desktop keeps the full text).
+  var phone = window.matchMedia('(max-width: 640px)');
+  function shortPlaceholders() {
+    var map = { 'Name or name variation': 'Name', 'Agency, AKA or city': 'Agency or city' };
+    document.querySelectorAll('.fso-top .persistent-toolbar input').forEach(function (el) {
+      if (!el.dataset.fullPlaceholder) el.dataset.fullPlaceholder = el.getAttribute('placeholder') || '';
+      var full = el.dataset.fullPlaceholder, want = phone.matches && map[full] ? map[full] : full;
+      if (el.getAttribute('placeholder') !== want) el.setAttribute('placeholder', want);
+    });
+  }
+  if (phone.addEventListener) phone.addEventListener('change', shortPlaceholders);
   function tagSaveBar() {
+    shortPlaceholders();
     var bar = document.querySelector('.savebar');
     if (!bar) return;
     var span = bar.querySelector(':scope > span:nth-of-type(2)');
